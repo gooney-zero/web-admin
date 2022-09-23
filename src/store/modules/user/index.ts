@@ -1,9 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { IResDataLogin } from '@/api/services/user/types/response'
+import { useRequest } from 'vue-request'
+import type { User } from '@/api/services/user/types/response'
+import { getUserInfo } from '@/api/services/user/user'
 
 export const useUserStore = defineStore('user', () => {
-  const userInfo = ref<IResDataLogin['user']>({
+  const { run } = useRequest(getUserInfo, {
+    manual: true,
+  })
+
+  const userInfo = ref<User>({
     uuid: '',
     nickName: '',
     headerImg: '',
@@ -11,14 +17,21 @@ export const useUserStore = defineStore('user', () => {
     sideMode: 'dark',
     activeColor: '#4D70FF',
     baseColor: '#fff',
-  })
+  } as User)
 
-  const setUserInfo = (user: IResDataLogin['user']) => {
+  const setUserInfo = (user: User) => {
     userInfo.value = user
   }
 
+  const lauch = () => {
+    run().then((r) => {
+      if (r?.data)
+        setUserInfo(r?.data)
+    })
+  }
   return {
-    setUserInfo,
     userInfo,
+    setUserInfo,
+    getUserInfo: lauch,
   }
 })

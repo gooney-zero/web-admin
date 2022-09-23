@@ -22,9 +22,9 @@ function getMenuOptions(children: (RouteRecordRaw & PlainObject)[]) {
     const menuItem = {
       key: item.name,
       label: item.meta!.title,
-      icon: renderIcon(BookIcon),
+      icon: item.meta!.icon,
       sort: item.sort || 0,
-    } as MenuOption
+    } as unknown as MenuOption
     if (item.children)
       menuItem.children = getMenuOptions(item.children!).sort((a, b) => (b.sort as number - (a.sort as number)))
     return menuItem
@@ -51,8 +51,7 @@ const collapsed = ref(false)
     <Avatar />
     <NMenu
       accordion :collapsed="collapsed" :collapsed-width="64" :collapsed-icon-size="22" :options="menuOptions"
-      :value="route.name as string"
-      @update:value="handleUpdateKey"
+      :value="route.name as string" @update:value="handleUpdateKey"
     />
   </NLayoutSider>
 </template>

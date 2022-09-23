@@ -11,7 +11,7 @@ import LayoutTabs from './tabs'
     <n-layout>
       <LayoutHeader />
       <LayoutTabs />
-      <n-layout-content class="p-5">
+      <n-layout-content class="px-5">
         <router-view v-slot="{ Component }">
           <div>
             <transition mode="out-in">

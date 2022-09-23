@@ -2,6 +2,7 @@ import type { AxiosRequestConfig } from 'axios'
 import axios from 'axios'
 import { compile } from 'path-to-regexp'
 import qs from 'qs'
+import { nextTick } from 'vue'
 import { formConfig } from './form'
 import { storage_token } from '@/utils/storage'
 import { HTTP_STATUS } from '@/constants/httpStatus'
@@ -40,10 +41,11 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (res) => {
     const data = res.data
-    if (data.code >= HTTP_STATUS.SUCCESS)
+    if ([HTTP_STATUS.SUCCESS, 304, 201].includes(res.status))
       return data
-
-    window.$message.error(data.message)
+    nextTick(() => {
+      window.$message.error(data.message)
+    })
     if (data.code === HTTP_STATUS.LOGIN_HAS_EXPIRED) {
       window.localStorage.clear()
       window.location.reload()

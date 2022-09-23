@@ -1,30 +1,53 @@
 import { defineStore } from 'pinia'
 
-import type { RouteRecordRaw } from 'vue-router'
+import type { RouteComponent, RouteRecordRaw } from 'vue-router'
 import { ref } from 'vue'
 import { getMenus } from '@/api/services/menu'
-const viewModules = import.meta.glob('../../../pages/**/index.ts')
+import { asyncRenderIcon } from '@/utils/icon'
 
-// function formatRouter(routes: ReturnTypePromiseFunc<typeof getMenus>['data']): RouteRecordRaw[] {
-//   return routes.map(v => ({
+type Lazy<T> = () => Promise<T>
 
-//   }))
-// }
+const viewModules = import.meta.glob('../../../pages/**/index.ts') as Record<string, Lazy<RouteComponent>>
 
-function routerHandle(routes: any[]): RouteRecordRaw[] {
-  return routes.map((v) => {
-    if (v.children) {
+const keepAliveRoutersArr: any[] = []
+
+const KeepAliveFilter = (routes: RouteRecordRaw[]) => {
+  routes && routes.forEach((item) => {
+    // 子菜单中有 keep-alive 的，父菜单也必须 keep-alive，否则无效。这里将子菜单中有 keep-alive 的父菜单也加入。
+    if ((item.children && item.children.some(ch => ch.meta!.keepAlive)) || item.meta!.keepAlive) {
+      item.component && (item.component as Lazy<RouteComponent>)().then((val) => {
+        !!(val as any).default.name && keepAliveRoutersArr.push((val as any).default.name)
+      })
+    }
+
+    if (item.children && item.children.length > 0)
+      KeepAliveFilter(item.children)
+  })
+}
+
+function routerHandle(routes: any[]): any {
+  return Promise.all(routes.map(async (v: any) => {
+    if (v.children && v.children.length) {
       return {
         ...v,
+        meta: {
+          ...v.meta,
+          icon: v.meta.icon ? await asyncRenderIcon(v.meta.icon) : 'not-found',
+        },
         component: getComponent(v.component),
-        children: routerHandle(v.children),
-      }
+        children: await routerHandle(v.children),
+      } as any
     }
     return {
       ...v,
+      meta: {
+        ...v.meta,
+        icon: v.meta.icon ? await asyncRenderIcon(v.meta.icon) : 'not-found',
+      },
+      children: null,
       component: getComponent(v.component),
     }
-  })
+  }))
 }
 
 function getComponent(component: string) {
@@ -39,6 +62,7 @@ function getComponent(component: string) {
 
 export const useAsyncRouteStore = defineStore('router', () => {
   const asyncRouters = ref<RouteRecordRaw[]>([])
+  const keepAliveRouters = ref<any>([])
   const getRouter = async () => {
     const baseRouter: RouteRecordRaw[] = [{
       path: '/layout',
@@ -49,8 +73,12 @@ export const useAsyncRouteStore = defineStore('router', () => {
     }]
 
     const routerRes = await getMenus()
-    if (routerRes.data) {
-      baseRouter[0].children = routerHandle(routerRes.data)
+    const asyncRouter = routerRes.data
+    if (asyncRouter) {
+      baseRouter[0].children = (await routerHandle(asyncRouter))
+      KeepAliveFilter(baseRouter[0].children!)
+      keepAliveRouters.value = keepAliveRoutersArr
+      console.log(keepAliveRouters.value)
       asyncRouters.value = baseRouter
     }
     return true
@@ -59,5 +87,6 @@ export const useAsyncRouteStore = defineStore('router', () => {
   return {
     getRouter,
     asyncRouters,
+    keepAliveRouters,
   }
 })

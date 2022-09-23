@@ -3,12 +3,32 @@ export interface IResDataLogin {
   user: User
 }
 
-interface User {
+export interface User {
+  id: number
+
   uuid: string
+
+  userName: string
+
   nickName: string
-  headerImg: string
-  authority: PlainObject
+
   sideMode: string
-  activeColor: string
+
+  headerImg: string
+
   baseColor: string
+
+  activeColor: string
+
+  authorityId: number
+
+  phone: string
+
+  email: string
+
+  enable: number
+
+  authority: PlainObject
+
+  authorities: PlainObject[]
 }

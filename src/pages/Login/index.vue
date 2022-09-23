@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script lang="ts" setup name="login">
 import { NButton, NCol, NForm, NFormItem, NIcon, NInput, NRow, useMessage } from 'naive-ui'
 import { EyeOffSharp, EyeOutline, PersonOutline } from '@vicons/ionicons5'
 import type {
@@ -59,6 +59,7 @@ const handleValidateButtonClick = (e: MouseEvent) => {
           toRaw(asyncRouters).forEach((asyncRouter) => {
             router.addRoute(asyncRouter)
           })
+          console.log(router.getRoutes())
           router.push({ name: ROUTER_NAMES.DEFAULT })
         }
       })

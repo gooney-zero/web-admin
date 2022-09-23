@@ -3,16 +3,19 @@ import { toRaw } from 'vue'
 import { useAsyncRouteStore } from '@/store/modules/permission'
 import { storage_token } from '@/utils/storage'
 import { ROUTER_NAMES } from '@/constants/router'
+import { useUserStore } from '@/store/modules/user'
 
 let hasAsyncRouter = 0
 
 export function createRouterGuards(router: Router) {
   const asyncRouteStore = useAsyncRouteStore()
+  const userStore = useUserStore()
   router.beforeEach(async (to) => {
     const token = storage_token.value
     if (token) {
-      if (!hasAsyncRouter) {
+      if (!hasAsyncRouter && asyncRouteStore.asyncRouters.length === 0) {
         hasAsyncRouter++
+        await userStore.getUserInfo()
         await asyncRouteStore.getRouter()
         const asyncRouters = asyncRouteStore.asyncRouters
 

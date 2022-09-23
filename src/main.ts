@@ -3,8 +3,8 @@ import 'uno.css'
 import { createApp } from 'vue'
 import './style/reset.css'
 import App from './App.vue'
-import { setupRouter } from './router'
 import { setupStore } from './store'
+import { setupRouter } from '@/router'
 
 const app = createApp(App)
 
