@@ -3,19 +3,22 @@ import Aside from './aside'
 import LayoutHeader from './header'
 import LayoutFooter from './footer'
 import LayoutTabs from './tabs'
+import { useAsyncRouteStore } from '@/store/modules/permission'
+
+const routerStore = useAsyncRouteStore()
 </script>
 
 <template>
   <NLayout has-sider>
     <Aside />
-    <n-layout>
+    <n-layout class="bg-[#eee]">
       <LayoutHeader />
-      <LayoutTabs />
-      <n-layout-content class="px-5">
+      <LayoutTabs class="bg-white" />
+      <n-layout-content class="px-5 bg-[#eee] min-h-[calc(100vh-200px)]">
         <router-view v-slot="{ Component }">
-          <div>
-            <transition mode="out-in">
-              <keep-alive>
+          <div class="bg-white p-8 rounded-md shadow-2xl shadow-gray-300 p-20">
+            <transition name="fade" mode="out-in">
+              <keep-alive :include="routerStore.keepAliveRouters">
                 <component :is="Component" />
               </keep-alive>
             </transition>

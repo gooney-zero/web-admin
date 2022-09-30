@@ -59,8 +59,10 @@ const handleValidateButtonClick = (e: MouseEvent) => {
           toRaw(asyncRouters).forEach((asyncRouter) => {
             router.addRoute(asyncRouter)
           })
-          console.log(router.getRoutes())
           router.push({ name: ROUTER_NAMES.DEFAULT })
+        }
+        else {
+          window.$message.error(r.msg)
         }
       })
     }

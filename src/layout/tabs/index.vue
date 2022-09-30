@@ -94,7 +94,7 @@ const handleClose = (name: string) => {
 </script>
 
 <template>
-  <div class="p-5">
+  <div class="py-3 mb-5">
     <n-tabs
       v-model:value="tabsStore.activeTab"
       :closable="closable" type="card"

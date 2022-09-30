@@ -1,24 +1,29 @@
 <script setup lang="ts" name="user">
 import { useRequest } from 'vue-request'
 import type { DataTableColumns, FormInst, FormItemRule, FormRules } from 'naive-ui'
-import { NButton, NSwitch } from 'naive-ui'
+import { NButton, NPopover, NSwitch, NTag } from 'naive-ui'
 import { computed, h, ref } from 'vue'
 import { AddCircleOutline, AddSharp, CreateOutline, CutOutline, PersonRemoveOutline } from '@vicons/ionicons5'
-import { addUser, getUsers } from '@/api/services/user/user'
+import { addUser, deleteUser, getUsers, updateUser } from '@/api/services/user/user'
 import type { User } from '@/api/services/user/types/response'
 import { IconComp, renderIcon } from '@/utils/icon'
 import { getAuthorityList } from '@/api/services/auth/auth'
 import { useUserStore } from '@/store/modules/user'
+import { HTTP_STATUS } from '@/constants/httpStatus'
 
 const { data, run: getAllOfUser } = useRequest(getUsers, { manual: true })
-const { loading, run } = useRequest(addUser, { manual: true })
+const { loading, run: saveUser } = useRequest(addUser, { manual: true })
+const { run: delUser } = useRequest(deleteUser, { manual: true })
+const { run: setUser } = useRequest(updateUser, { manual: true })
 
 getAllOfUser()
 
 const pageParams = ref({ page: 1, pageSize: 10 })
+const isAdd = ref(true)
 const { data: authorityData } = useRequest(getAuthorityList, { defaultParams: [pageParams.value] })
+const userStore = useUserStore()
 
-const showModal = ref(true)
+const showModal = ref(false)
 const onlyAllowNumber = (value: string) => !value || /^\d+$/.test(value)
 const originModel = {
   userName: 'ceshi111',
@@ -72,6 +77,7 @@ const authorityList = computed(() => authorityData.value?.data.list.map(item => 
 const rules: FormRules = {
   userName: [
     {
+      key: 'not_check',
       required: true,
       validator(rule: FormItemRule, value: string) {
         if (value.length < 5)
@@ -83,6 +89,7 @@ const rules: FormRules = {
   ],
   password: [
     {
+      key: 'not_check',
       required: true,
       validator(rule: FormItemRule, value: string) {
         if (value.length < 6)
@@ -105,7 +112,7 @@ const rules: FormRules = {
     validator: (rule: FormItemRule, value: string) => {
       if (value === '')
         return true
-      if (!/^[1]+[3,8]+\\d{9}$/.test(value))
+      if (!/^(?:(?:\+|00)86)?1(?:(?:3[\d])|(?:4[5-79])|(?:5[0-35-9])|(?:6[5-7])|(?:7[0-8])|(?:8[\d])|(?:9[189]))\d{8}$/.test(value))
         return new Error('请输入正确的手机号')
 
       return true
@@ -113,8 +120,8 @@ const rules: FormRules = {
   },
   authorityId: {
     required: true,
-    validator(rule: FormItemRule, value: string) {
-      if (!value)
+    validator(rule: FormItemRule, value: number) {
+      if (value < 0)
         return new Error('请选择用户角色')
       return true
     },
@@ -134,29 +141,30 @@ const autoCompleteOptions = computed(() => {
 const bodyStyle = {
   width: '600px',
 }
-const segmented = {
-  content: 'soft',
-  footer: 'soft',
-} as const
-const deleteUser = () => {
-  console.log('delete')
+
+const deleteUserHandle = async (uid: string) => {
+  const res = await delUser({ uuid: uid })
+  if (res?.code === HTTP_STATUS.SUCCESS)
+    getAllOfUser()
+  else
+    window.$message.error(res!.msg)
 }
-const update = () => {
-  console.log('update')
-}
+
 const resetPassword = () => {
   console.log('resetPassword')
 }
 
-const handleValidateButtonClick = (e: any) => {
-  e.preventDefault()
-  const userStore = useUserStore()
+const openModalDailog = () => {
+  isAdd.value = true
+  showModal.value = true
+}
+const checkAdd = () => {
   formRef.value?.validate((errors) => {
     if (!errors) {
-      run({
+      saveUser({
         ...modelRef.value,
         enable: Number(modelRef.value.enable),
-        authorityId: userStore.userInfo.authorityId,
+        authorityId: modelRef.value.authorityId,
         authorities: [modelRef.value.authorityId],
       }).then((res) => {
         if (res?.code === 200) {
@@ -174,6 +182,41 @@ const handleValidateButtonClick = (e: any) => {
       window.$message.error(errors[0][0].message || '请填写必要信息')
     }
   })
+}
+const checkEdit = () => {
+  formRef.value?.validate((errors) => {
+    if (!errors) {
+      setUser({
+        ...modelRef.value,
+        uuid: (modelRef.value as any).uuid,
+        enable: Number(modelRef.value.enable),
+        authorities: [modelRef.value.authorityId],
+      }).then((res) => {
+        if (res?.code === 200) {
+          showModal.value = false
+          getAllOfUser()
+          modelRef.value = originModel
+          window.$message.success(res.msg)
+        }
+        else {
+          window.$message.error(res!.msg)
+        }
+      })
+    }
+    else {
+      window.$message.error(errors[0][0].message || '请填写必要信息')
+    }
+  },
+  rule => rule.key !== 'not_check',
+  )
+}
+const handleValidateButtonClick = (e: any) => {
+  e.preventDefault()
+  if (isAdd.value)
+    checkAdd()
+
+  else
+    checkEdit()
 }
 
 const columns: DataTableColumns<User> = [
@@ -199,7 +242,24 @@ const columns: DataTableColumns<User> = [
   },
   {
     title: '用户角色',
-    key: 'authorityId',
+    key: 'authorities',
+    render(row) {
+      const tags = row.authorities.map((authority) => {
+        return h(
+          NTag,
+          {
+            class: 'mr-2',
+            type: 'info',
+            bordered: false,
+          },
+          {
+            default: () => authority.name,
+          },
+        )
+      })
+      return tags
+    },
+
   },
   {
     title: '启用',
@@ -209,7 +269,16 @@ const columns: DataTableColumns<User> = [
         NSwitch,
         {
           value: row.enable === 1,
-          onUpdateValue: (value: boolean) => row.enable = value ? 1 : 0,
+          onUpdateValue: async (value: boolean) => {
+            const res = await setUser({
+              uuid: row.uuid,
+              enable: Number(value),
+            })
+            if (res?.code === HTTP_STATUS.SUCCESS)
+              getAllOfUser()
+            else
+              window.$message.error(res!.msg)
+          },
         },
       )
     },
@@ -223,22 +292,40 @@ const columns: DataTableColumns<User> = [
       return h(
         'div',
         [
-          h(NButton, {
-            text: true,
-            size: 'tiny',
-            type: 'info',
-            class: 'pr-2',
-            onClick: deleteUser,
-          }, {
-            default: () => '删除',
-            icon: renderIcon(PersonRemoveOutline),
+          h(NPopover, {}, {
+            trigger: () => h(NButton, {
+              text: true,
+              size: 'tiny',
+              type: 'info',
+              class: 'pr-2',
+            }, {
+              default: () => '删除',
+              icon: renderIcon(PersonRemoveOutline),
+            }),
+            default: () => h('p', null, { default: () => '确定要删除此用户吗?' }),
+            footer: () => h('div', {
+              class: 'flex justify-end',
+            }, [
+              h(NButton, {
+                type: 'info',
+                class: 'ml-2',
+                size: 'tiny',
+                onClick: () => deleteUserHandle(row.uuid),
+              }, {
+                default: () => '确定',
+              }),
+            ]),
           }),
           h(NButton, {
             text: true,
             size: 'tiny',
             type: 'info',
             class: 'pr-2',
-            onClick: update,
+            onClick: () => {
+              modelRef.value = Object.assign(modelRef.value, { ...row, authorityId: row.authorities[0]?.authorityId, enable: Boolean(row.enable) })
+              isAdd.value = false
+              showModal.value = true
+            },
           }, {
             default: () => '编辑',
             icon: renderIcon(CreateOutline),
@@ -263,7 +350,7 @@ const columns: DataTableColumns<User> = [
 
 <template>
   <div class="mb-4">
-    <NButton type="info" @click="showModal = true">
+    <NButton type="info" @click="openModalDailog">
       <template #icon>
         <IconComp :comp="AddSharp" />
       </template>
@@ -281,10 +368,10 @@ const columns: DataTableColumns<User> = [
         maxWidth: '640px',
       }" :show-label="true" :model="modelRef" :rules="rules"
     >
-      <NFormItem path="userName" label="用户名">
+      <NFormItem v-if="isAdd" path="userName" label="用户名">
         <NInput v-model:value="modelRef.userName" placeholder="请输入用户名" @keydown.enter.prevent />
       </NFormItem>
-      <NFormItem path="password" label="密码">
+      <NFormItem v-if="isAdd" path="password" label="密码">
         <NInput v-model:value="modelRef.password" type="text" placeholder="请输入密码" @keydown.enter.prevent />
       </NFormItem>
       <NFormItem path="nickName" label="昵称">
@@ -337,6 +424,3 @@ const columns: DataTableColumns<User> = [
   </n-modal>
 </template>
 
-<style scoped>
-
-</style>

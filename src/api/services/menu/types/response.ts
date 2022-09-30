@@ -8,6 +8,8 @@ export interface IResDataGetMenus {
   'path': string
   'sort': number
   'component': string
+  parentId: null | number
+  children: IResDataGetMenus[]
   'meta': {
     'title': string
     'icon': string

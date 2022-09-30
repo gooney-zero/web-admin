@@ -3,8 +3,10 @@
 </script>
 
 <template>
-  <div class="p-5">
-    <n-layout-footer>成府路</n-layout-footer>
+  <div class="p-5 flex justify-center">
+    <n-layout-footer class="bg-[#eee] ">
+      Powered by gooney  |  Copyright gooney
+    </n-layout-footer>
   </div>
 </template>
 

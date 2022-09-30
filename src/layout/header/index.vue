@@ -2,7 +2,7 @@
 import { useRoute, useRouter } from 'vue-router'
 import type { DropdownMixedOption } from 'naive-ui/es/dropdown/src/interface'
 import { useUserStore } from '@/store/modules/user'
-import { storage_token } from '@/utils/storage'
+import { storage_token, tabsStore } from '@/utils/storage'
 import { ROUTER_NAMES } from '@/constants/router'
 
 const router = useRouter()
@@ -24,6 +24,8 @@ const options: DropdownMixedOption[] = [
     props: {
       onClick() {
         storage_token.value = ''
+        tabsStore.value.tabs = []
+        tabsStore.value.activeTab = ''
         router.push({ name: ROUTER_NAMES.LOGIN, replace: true })
       },
     },

@@ -2,6 +2,7 @@
 import 'uno.css'
 import { createApp } from 'vue'
 import './style/reset.css'
+import './style/global.css'
 import App from './App.vue'
 import { setupStore } from './store'
 import { setupRouter } from '@/router'

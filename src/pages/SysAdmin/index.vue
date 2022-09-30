@@ -2,13 +2,12 @@
 import { useAsyncRouteStore } from '@/store/modules/permission'
 
 const routerStore = useAsyncRouteStore()
-console.log(routerStore.keepAliveRouters)
 </script>
 
 <template>
-  <div>
+  <div class="bg-[#f7f7f7]">
     <router-view v-slot="{ Component, route }">
-      <transition mode="out-in" name="el-fade-in-linear">
+      <transition name="fade" mode="out-in">
         <div :key="route.name!">
           <keep-alive :include="routerStore.keepAliveRouters">
             <component :is="Component" />

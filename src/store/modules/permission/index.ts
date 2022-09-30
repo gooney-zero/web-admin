@@ -56,7 +56,6 @@ function getComponent(component: string) {
       .toLocaleLowerCase() === component.toLocaleLowerCase()
   })
 
-  // console.log(page)
   return viewModules[page as string]
 }
 
@@ -78,7 +77,6 @@ export const useAsyncRouteStore = defineStore('router', () => {
       baseRouter[0].children = (await routerHandle(asyncRouter))
       KeepAliveFilter(baseRouter[0].children!)
       keepAliveRouters.value = keepAliveRoutersArr
-      console.log(keepAliveRouters.value)
       asyncRouters.value = baseRouter
     }
     return true

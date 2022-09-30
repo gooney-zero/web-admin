@@ -46,3 +46,7 @@ export interface IReqAddUser {
 
   enable?: number
 }
+
+export interface IReqUpdateUser extends Partial<Omit<IReqAddUser, 'userName' | 'password' | 'authorityId'>> {
+  uuid: string
+}
