@@ -14,6 +14,7 @@ export function createRouterGuards(router: Router) {
     const token = storage_token.value
     if (token) {
       if (!hasAsyncRouter && asyncRouteStore.asyncRouters.length === 0) {
+        userStore.loadingPage = true
         hasAsyncRouter++
         await userStore.getUserInfo()
         await asyncRouteStore.getRouter()
@@ -22,6 +23,7 @@ export function createRouterGuards(router: Router) {
         toRaw(asyncRouters).forEach((asyncRouter) => {
           !router.hasRoute(asyncRouter.name!) && router.addRoute(asyncRouter)
         })
+        userStore.loadingPage = false
         if (storage_token.value) {
           return { ...to, replace: true }
         }
@@ -36,10 +38,6 @@ export function createRouterGuards(router: Router) {
         if (to.name === ROUTER_NAMES.LOGIN || to.name === '/')
           return false
       }
-      // else {
-      //   console.log(11)
-      //   return { ...to, replace: true }
-      // }
     }
     if (!token && to.name !== ROUTER_NAMES.LOGIN) {
       return {

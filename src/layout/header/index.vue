@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
 import type { DropdownMixedOption } from 'naive-ui/es/dropdown/src/interface'
+import { LogOutOutline, PersonOutline } from '@vicons/ionicons5'
 import { useUserStore } from '@/store/modules/user'
 import { storage_token, tabsStore } from '@/utils/storage'
 import { ROUTER_NAMES } from '@/constants/router'
+import { renderIcon } from '@/utils/icon'
 
 const router = useRouter()
 const route = useRoute()
@@ -17,6 +19,7 @@ const options: DropdownMixedOption[] = [
   {
     key: 'info',
     label: '个人信息',
+    icon: renderIcon(PersonOutline),
   },
   {
     key: 'logout',
@@ -29,6 +32,7 @@ const options: DropdownMixedOption[] = [
         router.push({ name: ROUTER_NAMES.LOGIN, replace: true })
       },
     },
+    icon: renderIcon(LogOutOutline),
   },
 ]
 const userStore = useUserStore()

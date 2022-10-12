@@ -5,7 +5,7 @@ const routerStore = useAsyncRouteStore()
 </script>
 
 <template>
-  <div class="bg-[#f7f7f7]">
+  <div>
     <router-view v-slot="{ Component, route }">
       <transition name="fade" mode="out-in">
         <div :key="route.name!">

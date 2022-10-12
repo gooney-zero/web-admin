@@ -41,14 +41,14 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (res) => {
     const data = res.data
-
     if ([HTTP_STATUS.SUCCESS, 304, 201].includes(res.status)) {
       if ([HTTP_STATUS.LOGIN_HAS_EXPIRED, HTTP_STATUS.NOT_LOGGED_IN].includes(data.code)) {
-        if (data.code === HTTP_STATUS.LOGIN_HAS_EXPIRED) {
-          window.localStorage.clear()
-          window.location.reload()
-          return
-        }
+        // if (data.code === HTTP_STATUS.LOGIN_HAS_EXPIRED) {
+        window.localStorage.clear()
+        window.sessionStorage.clear()
+        window.location.reload()
+        return
+        // }
       }
       return data
     }

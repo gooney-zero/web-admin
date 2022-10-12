@@ -11,7 +11,7 @@ import { getAuthorityList } from '@/api/services/auth/auth'
 import { useUserStore } from '@/store/modules/user'
 import { HTTP_STATUS } from '@/constants/httpStatus'
 
-const { data, run: getAllOfUser } = useRequest(getUsers, { manual: true })
+const { loading: loadingData, data, run: getAllOfUser } = useRequest(getUsers, { manual: true })
 const { loading, run: saveUser } = useRequest(addUser, { manual: true })
 const { run: delUser } = useRequest(deleteUser, { manual: true })
 const { run: setUser } = useRequest(updateUser, { manual: true })
@@ -156,6 +156,7 @@ const resetPassword = () => {
 
 const openModalDailog = () => {
   isAdd.value = true
+  modelRef.value = originModel
   showModal.value = true
 }
 const checkAdd = () => {
@@ -357,7 +358,7 @@ const columns: DataTableColumns<User> = [
       新增用户
     </NButton>
   </div>
-  <n-data-table :columns="columns" :data="data?.data" :pagination="false" :bordered="false" :max-height="1000" />
+  <n-data-table :loading="loadingData" :columns="columns" :data="data?.data" :pagination="false" :bordered="false" :max-height="1000" />
 
   <n-modal
     v-model:show="showModal" :mask-closable="false" :close-on-esc="false" class="custom-card" :style="bodyStyle"

@@ -33,6 +33,8 @@ const modelRef = ref<ModelType>({
 const { run } = useRequest(login, {
   manual: true,
 })
+window.localStorage.clear()
+window.sessionStorage.clear()
 
 const router = useRouter()
 

@@ -1,6 +1,6 @@
 import type { IReqPathById } from '../common.types'
 import type { IResDataGetMenus } from './types/response'
-import type { IReqAddMenusAuthOrity } from './types/request'
+import type { IReqAddMenu, IReqAddMenusAuthOrity } from './types/request'
 import { fetchGet, fetchPost } from '@/api'
 
 export const getMenus = fetchGet<IResDataGetMenus[]>({
@@ -17,4 +17,16 @@ export const getFlatMenus = fetchGet<IResDataGetMenus[], IReqPathById['path']>({
 
 export const addmenuAuthority = fetchPost<null, IReqAddMenusAuthOrity>({
   url: '/basemenus/addmenuAuthority',
+})
+
+export const addMenu = fetchPost<null, IReqAddMenu>({
+  url: '/basemenus/create',
+})
+
+export const updateMenu = fetchPost<null, IReqAddMenu & { id: number }>({
+  url: '/basemenus/update',
+})
+
+export const removeMenuById = fetchPost<null, { id: number }>({
+  url: '/basemenus/remove',
 })

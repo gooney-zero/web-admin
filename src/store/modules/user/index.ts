@@ -19,6 +19,8 @@ export const useUserStore = defineStore('user', () => {
     baseColor: '#fff',
   } as User)
 
+  const loadingPage = ref(false)
+
   const setUserInfo = (user: User) => {
     userInfo.value = user
   }
@@ -33,5 +35,6 @@ export const useUserStore = defineStore('user', () => {
     userInfo,
     setUserInfo,
     getUserInfo: lauch,
+    loadingPage,
   }
 })

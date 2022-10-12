@@ -40,11 +40,14 @@ const collapsed = ref(false)
 
 <template>
   <NLayoutSider
-    bordered show-trigger collapse-mode="width" :collapsed="collapsed" :width="220" :collapsed-width="64"
+    bordered
+    inverted
+    show-trigger collapse-mode="width" :collapsed="collapsed" :width="220" :collapsed-width="64"
     @collapse="collapsed = true" @expand="collapsed = false"
   >
     <Avatar />
     <NMenu
+      inverted
       accordion :collapsed="collapsed" :collapsed-width="64" :collapsed-icon-size="22" :options="menuOptions"
       :value="route.name as string" @update:value="handleUpdateKey"
     />

@@ -19,7 +19,12 @@ const routerStore = useAsyncRouteStore()
           <div class="bg-white p-8 rounded-md shadow-2xl shadow-gray-300 p-20">
             <transition name="fade" mode="out-in">
               <keep-alive :include="routerStore.keepAliveRouters">
-                <component :is="Component" />
+                <Suspense>
+                  <component :is="Component" />
+                  <template #fallback>
+                    <n-skeleton :repeat="10" text />
+                  </template>
+                </Suspense>
               </keep-alive>
             </transition>
           </div>

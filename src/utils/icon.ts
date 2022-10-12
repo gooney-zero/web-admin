@@ -1,7 +1,9 @@
 import type { IconProps } from 'naive-ui'
+
 import { NIcon } from 'naive-ui'
 import type { Component, PropType } from 'vue'
 import { defineComponent, h } from 'vue'
+
 const defaultProps = { size: 12 }
 export function renderIcon(icon: Component, props: IconProps = defaultProps) {
   return () => h(NIcon, props, { default: () => h(icon) })

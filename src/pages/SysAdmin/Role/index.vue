@@ -11,7 +11,7 @@ import { addAuthority, deleteAuthority, getAuthorityList, updateAuthority } from
 import { useUserStore } from '@/store/modules/user'
 import { HTTP_STATUS } from '@/constants/httpStatus'
 import type { IResDataGetAuthorityList } from '@/api/services/auth/types/response'
-import { addmenuAuthority, getAllOfMenu, getFlatMenus, getMenus } from '@/api/services/menu'
+import { addmenuAuthority, getAllOfMenu, getFlatMenus } from '@/api/services/menu'
 import type { IResDataGetMenus } from '@/api/services/menu/types/response'
 
 // const createTreeData: (children: IResDataGetMenus[]) => (IResDataGetMenus & { title: string })[] = children => children.map(item => ({
@@ -25,7 +25,7 @@ const { run: delAuthority } = useRequest(deleteAuthority, { manual: true })
 const { run: setAuthority } = useRequest(updateAuthority, { manual: true })
 const { data: menuList, run: getMenuList } = useRequest(getAllOfMenu, { manual: true }) as any
 const { run: getAuthorityMenus, data: flatMenus } = useRequest(getFlatMenus, { manual: true })
-const { data: authorityData, run: getAllOfRole } = useRequest(getAuthorityList, { manual: true })
+const { data: authorityData, run: getAllOfRole, loading: loadingData } = useRequest(getAuthorityList, { manual: true })
 const { run: addMenus } = useRequest(addmenuAuthority, { manual: true })
 
 const originModel = {
@@ -184,10 +184,6 @@ const deleteUserHandle = async (id: number) => {
   else { window.$message.error(res!.msg) }
 }
 
-const resetPassword = () => {
-  console.log('resetPassword')
-}
-
 const openModalDailog = () => {
   isAdd.value = true
   showModal.value = true
@@ -259,17 +255,18 @@ const addAuthorityMenus = () => {
       menus.push(toRaw(parent!))
     }
   })
-  console.log(menus)
   addMenus({
     baseMenus: menus,
     authorityId: currentAuthorityId,
   })
     .then((v) => {
-      if (v?.code === HTTP_STATUS.SUCCESS)
+      if (v?.code === HTTP_STATUS.SUCCESS) {
         window.$message.success(v.msg)
+        if (currentAuthorityId === userStore.userInfo.authorityId)
+          window.location.reload()
+      }
 
-      else
-        window.$message.error(v!.msg)
+      else { window.$message.error(v!.msg) }
     })
 }
 </script>
@@ -284,8 +281,8 @@ const addAuthorityMenus = () => {
     </NButton>
   </div>
   <n-data-table
-    :columns="columns" :data="authorityData?.data.list" :pagination="false" :bordered="false"
-    :max-height="1000"
+    :loading="loadingData" :columns="columns" :data="authorityData?.data.list" :pagination="false"
+    :bordered="false" :max-height="1000"
   />
 
   <n-modal
@@ -320,9 +317,9 @@ const addAuthorityMenus = () => {
   </n-modal>
   <n-drawer v-model:show="showMenus" :width="502">
     <n-drawer-content>
-      <template #header>
+      <!-- <template #header>
         Header
-      </template>
+      </template> -->
       <n-space vertical :size="12">
         <n-input v-model:value="pattern" placeholder="搜索" />
         <n-tree
